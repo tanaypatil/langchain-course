@@ -3,6 +3,7 @@ from langchain import hub
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 
@@ -34,7 +35,9 @@ agent = create_react_agent(
 )
 # executes the tools as per reasoning by llm
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-chain = agent_executor
+extract_output = RunnableLambda(lambda x: x["output"])
+parse_output = RunnableLambda(lambda x: output_parser.parse(x))
+chain = agent_executor | extract_output | parse_output
 
 
 def main():
